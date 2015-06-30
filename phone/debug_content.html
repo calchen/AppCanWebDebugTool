@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="um landscape min-width-240px min-width-320px min-width-480px min-width-768px min-width-1024px">
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="target-densitydpi=device-dpi, width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="stylesheet" href="css/fonts/font-awesome.min.css">
+  <link rel="stylesheet" href="css/ui-box.css">
+  <link rel="stylesheet" href="css/ui-base.css">
+  <link rel="stylesheet" href="css/ui-color.css">
+  <link rel="stylesheet" href="css/appcan.icon.css">
+  <link rel="stylesheet" href="css/appcan.control.css">
+  <link rel="stylesheet" href="debug_content/css/main.css">
+</head>
+<body class="um-vp bc-bg" ontouchstart>
+<div class="ub ub-ver uinn-a1">
+  <div class="ub-f1">
+    <div class="sc-bg-active uinput ub ub-f1  bc-border uba">
+      <input id="url" placeholder="请输网页URL" type="text" class="ub-f1" onclick="changeDefaultUrl();"
+             onchange="checkUrl();" value="http://">
+    </div>
+  </div>
+
+  <div class="uinn-a7 umar-at1">
+    <div class="btn ub ub-ac bc-text-head ub-pc bc-btn" id="open">
+      打开
+    </div>
+  </div>
+  <div class="uinn-a7 umar-at1">
+    <div class="btn ub ub-ac bc-text-head ub-pc bc-btn" id="QROpen">
+      二维码扫描
+    </div>
+  </div>
+  <div class="uinn-a7 umar-at1">
+    <div class="btn ub ub-ac bc-text-head ub-pc bc-btn" id="deviceInfo">
+      设备信息
+    </div>
+  </div>
+  <div class="uinn ulev-1">
+    历史记录
+  </div>
+  <div class="uba bc-border ub ub-ver ulev-1">
+    <div id="history">
+
+    </div>
+    <div class="ub ub-ac ub-pc uinn-as2" onclick="clearHistory()">
+      清空历史纪录
+    </div>
+  </div>
+</div>
+</body>
+<script src="js/appcan.js"></script>
+<script src="js/appcan.control.js"></script>
+<script src="js/appcan.listview.js"></script>
+</body>
+<script>
+  appcan.ready(function () {
+    getHistory();
+    uexScanner.cbOpen = ScannerSuccessCallBack;
+  });
+  appcan.button("#open", "btn-act", function () {
+    openUrl($("#url").val());
+  });
+  appcan.button("#QROpen", "btn-act", function () {
+    uexScanner.open();
+  });
+  appcan.button("#deviceInfo", "btn-act", function () {
+    appcan.window.open("deviceInfo", "deviceInfo.html", 0, 0);
+  });
+  function openUrl(url) {
+    if(url == "" || url.toLowerCase() == "http://") {
+      return false;
+    }
+    appcan.locStorage.setVal("url", url);
+    setHistory(url);
+    appcan.window.open("webPage", "webPage.html", 0, 0);
+  }
+  function ScannerSuccessCallBack(opCode, dataType, data) {
+    data = JSON.parse(data);
+    $("#url").val(data.code);
+  }
+  function changeDefaultUrl() {
+    if($("#url").val() == "") {
+      $("#url").val("http://");
+    }
+  }
+  function checkUrl() {
+    var url = $("#url").val();
+  }
+  function getHistory() {
+    var result = JSON.parse(appcan.locStorage.getVal("history"));
+    if (result == null) {
+      result = new Array();
+      appcan.locStorage.setVal("history", JSON.stringify(result));
+    }
+    var html = "";
+    for (var i = result.length - 1; i >= 0; i--) {
+      html += '<div class="ub ubb bc-border uinn-as2" onclick="openUrl(\'' + result[i] + '\')">\
+                   <div class="ub-f1 umar-l">' + result[i] + '</div>\
+                   <div class="fa fa-angle-right sc-text ulev2"></div>\
+                </div>';
+    }
+    $("#history").empty();
+    $("#history").append(html)
+  }
+  function setHistory(url) {
+    var result = JSON.parse(appcan.locStorage.getVal("history"));
+
+    if (result == null) {
+      result = new Array();
+    }
+    result.push(url);
+    if (result.length > 10) {
+      var r = new Array();
+      for (var i = 1; i < 11; i++) {
+        r.push(result[i]);
+      }
+      result = r;
+    }
+    appcan.locStorage.setVal("history", JSON.stringify(result));
+    getHistory();
+  }
+  function clearHistory() {
+    appcan.locStorage.remove("history");
+    getHistory();
+  }
+
+</script>
+</html>
